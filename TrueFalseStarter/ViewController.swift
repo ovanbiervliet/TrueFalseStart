@@ -23,7 +23,7 @@ class ViewController: UIViewController {
     // Setup a trivia provider
     // & prepare first trivia
     let triviaProvider = TriviaProvider()
-    var currentTrivia = Trivia(question: "", choices: [], answer: "")
+    var currentTrivia = Trivia(question: "", choices: [], answer: 0)
     
     @IBOutlet weak var questionField: UILabel!
     @IBOutlet var answerButtons: [UIButton]!
@@ -50,6 +50,13 @@ class ViewController: UIViewController {
         }
     }
     
+    func showCorrectAnswer(answer: Int) {
+        // check every button and change styling to show
+        // the correct answer
+        for button in answerButtons {
+            button.tag == answer ? (button.alpha = 1.0) : (button.alpha = 0.4)
+        }
+    }
     
     func displayQuestion() {
         // Get a new trivia
@@ -63,6 +70,7 @@ class ViewController: UIViewController {
             
             // set visibility of button
             button.isHidden = index >= numAnswers
+            button.alpha = 1.0                                                                                        
             
             // if this is an active button, set title
             if index < numAnswers {
@@ -88,9 +96,10 @@ class ViewController: UIViewController {
         // Increment the questions asked counter
         questionsAsked += 1
         
-
         // the chosen answer is the title of the button that is pushed
-        let answer = sender.currentTitle
+        let answer = sender.tag
+
+        showCorrectAnswer(answer: answer)
         
         if (answer == currentTrivia.answer) {
             correctQuestions += 1
