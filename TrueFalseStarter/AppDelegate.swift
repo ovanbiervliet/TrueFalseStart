@@ -16,6 +16,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        UIButton.appearance().cornerRadius = 5
+
         return true
     }
 
@@ -42,5 +45,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
 
+}
+
+extension UIButton {
+    dynamic var borderColor: UIColor? {
+        get {
+            if let cgColor = layer.borderColor {
+                return UIColor(cgColor: cgColor)
+            }
+            return nil
+        }
+        set { layer.borderColor = newValue?.cgColor }
+    }
+    dynamic var borderWidth: CGFloat {
+        get { return layer.borderWidth }
+        set { layer.borderWidth = newValue }
+    }
+    dynamic var cornerRadius: CGFloat {
+        get { return layer.cornerRadius }
+        set { layer.cornerRadius = newValue }
+    }
 }
 

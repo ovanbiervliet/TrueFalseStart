@@ -16,30 +16,26 @@ class ViewController: UIViewController {
     var questionsAsked = 0
     var correctQuestions = 0
     var indexOfSelectedQuestion: Int = 0
+    let maxAnswers = 4
     
     var gameSound: SystemSoundID = 0
     
-    let trivia: [[String : String]] = [
-        ["Question": "Only female koalas can whistle", "Answer": "False"],
-        ["Question": "Blue whales are technically whales", "Answer": "True"],
-        ["Question": "Camels are cannibalistic", "Answer": "False"],
-        ["Question": "All ducks are birds", "Answer": "True"]
-    ]
+    // Setup a trivia provider
+    // & prepare first trivia
+    let triviaProvider = TriviaProvider()
+    var currentTrivia = Trivia(question: "", choices: [], answer: "")
     
     @IBOutlet weak var questionField: UILabel!
-    @IBOutlet weak var answer1Button: UIButton!
-    @IBOutlet weak var answer2Button: UIButton!
-    @IBOutlet weak var answer3Button: UIButton!
-    @IBOutlet weak var answer4Button: UIButton!
+    @IBOutlet var answerButtons: [UIButton]!
     @IBOutlet weak var playAgainButton: UIButton!
     
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Prepare game
         loadGameStartSound()
         // Start game
         playGameStartSound()
-        styleButtons()
         displayQuestion()
     }
 
@@ -48,26 +44,38 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    func styleButtons() {
-        // Add slightly rounded corners to the buttons
-        answer1Button.layer.cornerRadius = 5
-        answer2Button.layer.cornerRadius = 5
-        answer3Button.layer.cornerRadius = 5
-        answer4Button.layer.cornerRadius = 5
-        playAgainButton.layer.cornerRadius = 5
+    func hideAnswerButtons() {
+        for button in answerButtons {
+          button.isHidden = true
+        }
     }
     
+    
     func displayQuestion() {
-        indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: trivia.count)
-        let questionDictionary = trivia[indexOfSelectedQuestion]
-        questionField.text = questionDictionary["Question"]
+        // Get a new trivia
+        currentTrivia = triviaProvider.randomTrivia()
+        
+        questionField.text = currentTrivia.question
+        let numAnswers = currentTrivia.choices.count
+        for index in 0..<maxAnswers {
+            // reference current button
+            let button = answerButtons[index]
+            
+            // set visibility of button
+            button.isHidden = index >= numAnswers
+            
+            // if this is an active button, set title
+            if index < numAnswers {
+                button.setTitle(currentTrivia.choices[index], for: UIControlState.normal)
+            }
+        }
+        
         playAgainButton.isHidden = true
     }
     
     func displayScore() {
         // Hide the answer buttons
-        answer1Button.isHidden = true
-        answer2Button.isHidden = true
+        hideAnswerButtons()
         
         // Display play again button
         playAgainButton.isHidden = false
@@ -80,10 +88,11 @@ class ViewController: UIViewController {
         // Increment the questions asked counter
         questionsAsked += 1
         
-        let selectedQuestionDict = trivia[indexOfSelectedQuestion]
-        let correctAnswer = selectedQuestionDict["Answer"]
+
+        // the chosen answer is the title of the button that is pushed
+        let answer = sender.currentTitle
         
-        if (sender === answer1Button &&  correctAnswer == "True") || (sender === answer2Button && correctAnswer == "False") {
+        if (answer == currentTrivia.answer) {
             correctQuestions += 1
             questionField.text = "Correct!"
         } else {
@@ -104,10 +113,6 @@ class ViewController: UIViewController {
     }
     
     @IBAction func playAgain() {
-        // Show the answer buttons
-        answer1Button.isHidden = false
-        answer2Button.isHidden = false
-        
         questionsAsked = 0
         correctQuestions = 0
         nextRound()
