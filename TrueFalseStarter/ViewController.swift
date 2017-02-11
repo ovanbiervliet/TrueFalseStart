@@ -17,6 +17,10 @@ class ViewController: UIViewController {
     var correctQuestions = 0
     var indexOfSelectedQuestion: Int = 0
     let maxAnswers = 4
+    let buttonNormalColor = UIColor(red: 0x49 / 255, green: 0x50 / 255, blue: 0x57 / 255, alpha: 1.0)
+    let buttonChosenColor = UIColor(red: 0xC9 / 255, green: 0x2A / 255, blue: 0x2A / 255, alpha: 1.0)
+    let buttonCorrectColor = UIColor(red: 0x2F / 255, green: 0x9E / 255, blue: 0x44 / 255, alpha: 1.0)
+    
     
     var gameSound: SystemSoundID = 0
     
@@ -28,14 +32,22 @@ class ViewController: UIViewController {
     @IBOutlet weak var questionField: UILabel!
     @IBOutlet var answerButtons: [UIButton]!
     @IBOutlet weak var playAgainButton: UIButton!
+    @IBOutlet weak var scoreLabel: UILabel!
     
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Prepare game
         loadGameStartSound()
+        
+        // Setup button colors when disabled
+        for button in answerButtons {
+            button.setTitleColor(UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), for: .disabled)
+        }
+
         // Start game
         playGameStartSound()
+        
         displayQuestion()
     }
 
@@ -50,45 +62,72 @@ class ViewController: UIViewController {
         }
     }
     
-    func showCorrectAnswer(answer: Int) {
+    func lockAnswerButtons(_ locked: Bool) {
+        for button in answerButtons {
+            button.isEnabled = !locked
+        }
+    }
+    
+    func showCorrectAnswer(answer: Int, triviaAnswer: Int) {
         // check every button and change styling to show
         // the correct answer
         for button in answerButtons {
-            button.tag == answer ? (button.alpha = 1.0) : (button.alpha = 0.4)
+            // show choosen answer
+            button.tag == answer
+                ? (button.backgroundColor = buttonChosenColor)
+                : (button.backgroundColor = buttonNormalColor)
+            
+            // show correct answer
+            if (button.tag == triviaAnswer) {
+                button.backgroundColor = buttonCorrectColor
+            }
+            
         }
+        // prevent additional clicks
+        lockAnswerButtons(true)
     }
     
     func displayQuestion() {
         // Get a new trivia
         currentTrivia = triviaProvider.randomTrivia()
         
+        // Setup the question and buttons
         questionField.text = currentTrivia.question
         let numAnswers = currentTrivia.choices.count
         for index in 0..<maxAnswers {
             // reference current button
             let button = answerButtons[index]
             
-            // set visibility of button
-            button.isHidden = index >= numAnswers
-            button.alpha = 1.0                                                                                        
-            
             // if this is an active button, set title
             if index < numAnswers {
                 button.setTitle(currentTrivia.choices[index], for: UIControlState.normal)
+                button.backgroundColor = buttonNormalColor
             }
+
+            // set visibility of button
+            button.isHidden = index >= numAnswers
         }
-        
+
         playAgainButton.isHidden = true
+        lockAnswerButtons(false)
     }
     
-    func displayScore() {
+    func updateScore() {
+        if (scoreLabel.isHidden) { scoreLabel.isHidden = false }
+        scoreLabel.text = "Score: \(correctQuestions)"
+    }
+    
+    func displayFinalScore() {
         // Hide the answer buttons
         hideAnswerButtons()
+        
+        // Hide the small score label
+        scoreLabel.isHidden = true
         
         // Display play again button
         playAgainButton.isHidden = false
         
-        questionField.text = "Way to go!\nYou got \(correctQuestions) out of \(questionsPerRound) correct!"
+        questionField.text = "You got \(correctQuestions) out of \(questionsPerRound) correct!"
         
     }
     
@@ -99,7 +138,7 @@ class ViewController: UIViewController {
         // the chosen answer is the title of the button that is pushed
         let answer = sender.tag
 
-        showCorrectAnswer(answer: answer)
+        showCorrectAnswer(answer: answer, triviaAnswer: currentTrivia.answer)
         
         if (answer == currentTrivia.answer) {
             correctQuestions += 1
@@ -108,13 +147,15 @@ class ViewController: UIViewController {
             questionField.text = "Sorry, wrong answer!"
         }
         
+        updateScore()
+        
         loadNextRoundWithDelay(seconds: 2)
     }
     
     func nextRound() {
         if questionsAsked == questionsPerRound {
             // Game is over
-            displayScore()
+            displayFinalScore()
         } else {
             // Continue game
             displayQuestion()
@@ -124,6 +165,7 @@ class ViewController: UIViewController {
     @IBAction func playAgain() {
         questionsAsked = 0
         correctQuestions = 0
+        updateScore()
         nextRound()
     }
     
