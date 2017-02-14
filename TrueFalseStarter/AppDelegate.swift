@@ -18,7 +18,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         UIButton.appearance().cornerRadius = 5
-
         return true
     }
 

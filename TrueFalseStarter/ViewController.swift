@@ -27,6 +27,11 @@ class ViewController: UIViewController {
     let buttonNormalColor = UIColor(red: 0x49 / 255, green: 0x50 / 255, blue: 0x57 / 255, alpha: 1.0)
     let buttonChosenColor = UIColor(red: 0xC9 / 255, green: 0x2A / 255, blue: 0x2A / 255, alpha: 1.0)
     let buttonCorrectColor = UIColor(red: 0x2F / 255, green: 0x9E / 255, blue: 0x44 / 255, alpha: 1.0)
+    let viewBackgroundColor = UIColor(red: 0x21 / 255, green: 0x25 / 255, blue: 0x29 / 255, alpha: 1.0)
+    let viewLightningColor = UIColor(red: 0xF5 / 255, green: 0x9F / 255, blue: 0x00 / 255, alpha: 1.0)
+
+    var timer = Timer()
+    
     enum emoji: String {
         case score0 = "🙁"
         case score1 = "😕"
@@ -49,25 +54,38 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // Prepare sounds
+        loadGameSounds()
+
+        // Setup button title color when disabled
+        for button in answerButtons {
+            button.setTitleColor(UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), for: .disabled)
+            button.titleLabel!.numberOfLines = 1
+            button.titleLabel!.adjustsFontSizeToFitWidth = true
+            button.titleLabel!.lineBreakMode = NSLineBreakMode.byClipping
+            button.titleLabel!.minimumScaleFactor = 0.08
+        }
+
+        // Start a game
+        prepareNewGame()
+    }
+
+    func prepareNewGame() {
+        
         // Get an array of shuffled Trivia questions
         shuffledTrivia = triviaProvider.shuffledTrivia()
         
         // Prepare game
-        loadGameSounds()
         playGameSound(gameInitSound)
         
-        // Setup button title color when disabled
-        for button in answerButtons {
-            button.setTitleColor(UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), for: .disabled)
-        }
-
         // Hide the score emoji
         emojiLabel.isHidden = true
         
         // Start game
         displayQuestion()
     }
-
+    
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -91,11 +109,11 @@ class ViewController: UIViewController {
     
     /// Fetches and displays a question
     func displayQuestion() {
-        // Get a new trivia
-        //currentTrivia = triviaProvider.randomTrivia()
         
         // Try to get a new Trivia
         if let currentTrivia = triviaProvider.nextTrivia(from: &shuffledTrivia) {
+
+            
             // Setup the question
             questionField.text = currentTrivia.question
             
@@ -123,9 +141,21 @@ class ViewController: UIViewController {
             }
             playAgainButton.isHidden = true
             lockAnswerButtons(false)
+
+            // Random number to determine if this question will
+            // be in Lightning mode (timeout 15 seconds)
+            if (GKRandomSource.sharedRandom().nextInt(upperBound: 4) == 3) {
+                // 1 on 4 chance to have a lightning question
+                UIView.animate(withDuration: 1.0) { () -> Void in
+                    self.view.backgroundColor = self.viewLightningColor
+                }
+                loadNextQuestionWithTimeout(seconds: 10)
+            }
+
         } else {
             // there are no more Trivia questions
-            displayFinalScore()
+            // Start a game with reloaded questions
+            prepareNewGame()
         }
         
     }
@@ -133,11 +163,15 @@ class ViewController: UIViewController {
     /// Updates the in-game score display
     func updateScore() {
         //if (scoreLabel.isHidden) { scoreLabel.isHidden = false }
-        scoreLabel.text = "Score: \(correctQuestions)\nHigh Score: \(highScore)"
+        scoreLabel.text = "Score: \(correctQuestions) — High Score: \(highScore)"
     }
     
     /// Gets called when one of the answer buttons is tapped
     @IBAction func checkAnswer(_ sender: UIButton) {
+        // Cancel any running timers
+        timer.invalidate()
+
+        
         // Increment the questions asked counter
         questionsAsked += 1
         
@@ -150,7 +184,7 @@ class ViewController: UIViewController {
             questionField.text = "Correct!"
             playGameSound(triviaRightSound)
         } else {
-            questionField.text = "Sorry, wrong answer!"
+            questionField.text = (sender === playAgainButton) ? "Sorry, you're too late!" : "Sorry, wrong answer!"
             playGameSound(triviaWrongSound)
         }
         
@@ -210,7 +244,6 @@ class ViewController: UIViewController {
         // Play a tune
         playGameSound(gameOverSound)
 
-        
         // Hide the small score label
         //scoreLabel.isHidden = true
         
@@ -237,14 +270,22 @@ class ViewController: UIViewController {
         playAgainButton.isHidden = false
         
         questionField.text = "You got \(correctQuestions) out of \(questionsAsked) correct!"
-        
     }
     
 
-    
     // MARK: Helper Methods
+
+    func loadNextQuestionWithTimeout(seconds: Double = 15.0) {
+        timer = Timer.scheduledTimer(withTimeInterval: seconds, repeats: false) { (timer) in
+            // do stuff x seconds later
+            self.checkAnswer(self.playAgainButton)
+        }
+    }
     
     func loadNextRoundWithDelay(seconds: Int) {
+        // Reset background color
+        view.backgroundColor = viewBackgroundColor
+
         // Converts a delay in seconds to nanoseconds as signed 64 bit integer
         let delay = Int64(NSEC_PER_SEC * UInt64(seconds))
         // Calculates a time value to execute the method given current time and delay
@@ -252,7 +293,9 @@ class ViewController: UIViewController {
         
         // Executes the nextRound method at the dispatch time on the main queue
         DispatchQueue.main.asyncAfter(deadline: dispatchTime) {
+            
             self.nextRound()
+
         }
     }
     
