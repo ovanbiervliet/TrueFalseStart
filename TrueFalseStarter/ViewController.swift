@@ -35,8 +35,10 @@ class ViewController: UIViewController {
         case score4 = "😀"
     }
     
-    
-    var gameSound: SystemSoundID = 0
+    var gameInitSound: SystemSoundID = 0
+    var gameOverSound: SystemSoundID = 1
+    var triviaRightSound: SystemSoundID = 2
+    var triviaWrongSound: SystemSoundID = 3
     
     // Setup a trivia provider
     // & prepare first trivia
@@ -51,8 +53,8 @@ class ViewController: UIViewController {
         shuffledTrivia = triviaProvider.shuffledTrivia()
         
         // Prepare game
-        loadGameStartSound()
-        playGameStartSound()
+        loadGameSounds()
+        playGameSound(gameInitSound)
         
         // Setup button title color when disabled
         for button in answerButtons {
@@ -146,8 +148,10 @@ class ViewController: UIViewController {
             correctQuestions += 1
             if (correctQuestions > highScore) { highScore = correctQuestions }
             questionField.text = "Correct!"
+            playGameSound(triviaRightSound)
         } else {
             questionField.text = "Sorry, wrong answer!"
+            playGameSound(triviaWrongSound)
         }
         
         showCorrectAnswer(answer: sender, triviaAnswer: currentTrivia.answer)
@@ -194,6 +198,7 @@ class ViewController: UIViewController {
         questionsAsked = 0
         correctQuestions = 0
         updateScore()
+        playGameSound(gameInitSound)
         nextRound()
     }
     
@@ -201,6 +206,10 @@ class ViewController: UIViewController {
     func displayFinalScore() {
         // Hide the answer buttons
         hideAnswerButtons()
+        
+        // Play a tune
+        playGameSound(gameOverSound)
+
         
         // Hide the small score label
         //scoreLabel.isHidden = true
@@ -247,13 +256,20 @@ class ViewController: UIViewController {
         }
     }
     
-    func loadGameStartSound() {
-        let pathToSoundFile = Bundle.main.path(forResource: "GameSound", ofType: "wav")
+    func loadSoundFile(from fileName: String, fileExtension: String, gameSound: inout SystemSoundID) {
+        let pathToSoundFile = Bundle.main.path(forResource: fileName, ofType: fileExtension)
         let soundURL = URL(fileURLWithPath: pathToSoundFile!)
         AudioServicesCreateSystemSoundID(soundURL as CFURL, &gameSound)
     }
     
-    func playGameStartSound() {
+    func loadGameSounds() {
+        loadSoundFile(from: "GameInit", fileExtension: "aiff", gameSound: &gameInitSound)
+        loadSoundFile(from: "GameOver", fileExtension: "aiff", gameSound: &gameOverSound)
+        loadSoundFile(from: "triviaRight", fileExtension: "aiff", gameSound: &triviaRightSound)
+        loadSoundFile(from: "triviaWrong", fileExtension: "aiff", gameSound: &triviaWrongSound)
+    }
+    
+    func playGameSound(_ gameSound: SystemSoundID) {
         AudioServicesPlaySystemSound(gameSound)
     }
 }
