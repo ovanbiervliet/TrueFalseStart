@@ -8,6 +8,8 @@
 
 import GameKit
 
+// Defines Trivia questions and answers
+// Answers are 1-based for convenience to the quizmaster
 let allTrivia: [Trivia] = [
     Trivia(question: "Only female koalas can whistle", choices: ["True", "False"], answer: 2),
     Trivia(question: "Blue whales are technically whales", choices: ["True", "False"], answer: 1),
@@ -23,6 +25,8 @@ let allTrivia: [Trivia] = [
     Trivia(question: "Which city is the oldest?", choices: ["Mexico City", "Cape Town", "San Juan", "Sydney"], answer: 1),
     Trivia(question: "Which country was the first to allow women to vote in national elections?", choices: ["Poland", "United States", "Sweden", "Senegal"], answer: 1),
     Trivia(question: "Which of these countries won the most medals in the 2012 Summer Games?", choices: ["France", "Germany", "Japan", "Great Britain"], answer: 4),
+    Trivia(question: "Which ensemble is never alone and not a crowd?", choices: ["Solo", "Duo", "Trio"], answer: 2),
+
 ]
 
 struct Trivia {

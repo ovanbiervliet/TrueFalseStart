@@ -113,6 +113,8 @@ class ViewController: UIViewController {
         // Try to get a new Trivia
         if let currentTrivia = triviaProvider.nextTrivia(from: &shuffledTrivia) {
 
+            // We don't need this anymore
+            playAgainButton.isHidden = true
             
             // Setup the question
             questionField.text = currentTrivia.question
@@ -139,14 +141,15 @@ class ViewController: UIViewController {
                 // set visibility of button
                 button.isHidden = index >= numAnswers
             }
-            playAgainButton.isHidden = true
+            
+            // Unlock the buttons
             lockAnswerButtons(false)
 
-            // Random number to determine if this question will
-            // be in Lightning mode (timeout 15 seconds)
+            // Random number determines if this question will
+            // be in Lightning mode (timeout X seconds)
             if (GKRandomSource.sharedRandom().nextInt(upperBound: 4) == 3) {
                 // 1 on 4 chance to have a lightning question
-                UIView.animate(withDuration: 1.0) { () -> Void in
+                UIView.animate(withDuration: 0.5) { () -> Void in
                     self.view.backgroundColor = self.viewLightningColor
                 }
                 loadNextQuestionWithTimeout(seconds: 10)
@@ -177,13 +180,14 @@ class ViewController: UIViewController {
         
         // the chosen answer is correct when its tag == 1
         let answer = sender.tag
-
         if (answer == 1) {
             correctQuestions += 1
             if (correctQuestions > highScore) { highScore = correctQuestions }
             questionField.text = "Correct!"
             playGameSound(triviaRightSound)
         } else {
+            // In Lightning mode, we manually tapped playAgainButton 
+            // because no answer-button was tapped
             questionField.text = (sender === playAgainButton) ? "Sorry, you're too late!" : "Sorry, wrong answer!"
             playGameSound(triviaWrongSound)
         }
@@ -197,6 +201,9 @@ class ViewController: UIViewController {
     
     /// Shows color-coded buttons based on chosen and correct answers
     func showCorrectAnswer(answer: UIButton, triviaAnswer: Int) {
+
+        // prevent additional clicks
+        lockAnswerButtons(true)
 
         // check every button and change styling to show
         // the correct answer
@@ -213,8 +220,6 @@ class ViewController: UIViewController {
             }
             
         }
-        // prevent additional clicks
-        lockAnswerButtons(true)
     }
     
     func nextRound() {
@@ -245,6 +250,8 @@ class ViewController: UIViewController {
         playGameSound(gameOverSound)
 
         // Hide the small score label
+        // Not necessary anymore because playAgainButton
+        // will be displayed on top of it
         //scoreLabel.isHidden = true
         
         // Show correct emoji
@@ -261,10 +268,10 @@ class ViewController: UIViewController {
         case 100:
             emojiLabel.text = emoji.score4.rawValue
         default:
+            // should never be shown
             emojiLabel.text = "🦑"
         }
         emojiLabel.isHidden = false
-        
         
         // Display play again button
         playAgainButton.isHidden = false
@@ -277,7 +284,8 @@ class ViewController: UIViewController {
 
     func loadNextQuestionWithTimeout(seconds: Double = 15.0) {
         timer = Timer.scheduledTimer(withTimeInterval: seconds, repeats: false) { (timer) in
-            // do stuff x seconds later
+            // After x seconds, we force the game to continue by
+            // faking a button tap on a non-answer button
             self.checkAnswer(self.playAgainButton)
         }
     }
