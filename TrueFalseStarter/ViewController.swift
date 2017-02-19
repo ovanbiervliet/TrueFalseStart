@@ -13,6 +13,7 @@ import AudioToolbox
 class ViewController: UIViewController {
     
     @IBOutlet weak var questionField: UILabel!
+    @IBOutlet weak var progressBar: UIProgressView!
     @IBOutlet var answerButtons: [UIButton]!
     @IBOutlet weak var playAgainButton: UIButton!
     @IBOutlet weak var scoreLabel: UILabel!
@@ -27,7 +28,7 @@ class ViewController: UIViewController {
     let buttonNormalColor = UIColor(red: 0x49 / 255, green: 0x50 / 255, blue: 0x57 / 255, alpha: 1.0)
     let buttonChosenColor = UIColor(red: 0xC9 / 255, green: 0x2A / 255, blue: 0x2A / 255, alpha: 1.0)
     let buttonCorrectColor = UIColor(red: 0x2F / 255, green: 0x9E / 255, blue: 0x44 / 255, alpha: 1.0)
-    let viewBackgroundColor = UIColor(red: 0x21 / 255, green: 0x25 / 255, blue: 0x29 / 255, alpha: 1.0)
+    let viewBackgroundColor = UIColor(red: 0x0 / 255, green: 0x0 / 255, blue: 0x0 / 255, alpha: 1.0)
     let viewLightningColor = UIColor(red: 0xF5 / 255, green: 0x9F / 255, blue: 0x00 / 255, alpha: 1.0)
 
     var timer = Timer()
@@ -110,6 +111,9 @@ class ViewController: UIViewController {
     /// Fetches and displays a question
     func displayQuestion() {
         
+        // Hide the progress bar
+        progressBar.isHidden = true
+
         // Try to get a new Trivia
         if let currentTrivia = triviaProvider.nextTrivia(from: &shuffledTrivia) {
 
@@ -144,16 +148,17 @@ class ViewController: UIViewController {
             
             // Unlock the buttons
             lockAnswerButtons(false)
-
+            
             // Random number determines if this question will
             // be in Lightning mode (timeout X seconds)
-            if (GKRandomSource.sharedRandom().nextInt(upperBound: 4) == 3) {
+            //if (GKRandomSource.sharedRandom().nextInt(upperBound: 4) == 3) {
                 // 1 on 4 chance to have a lightning question
-                UIView.animate(withDuration: 0.5) { () -> Void in
-                    self.view.backgroundColor = self.viewLightningColor
-                }
-                loadNextQuestionWithTimeout(seconds: 10)
-            }
+
+                //UIView.animate(withDuration: 0.5) { () -> Void in
+                //    self.view.backgroundColor = self.viewLightningColor
+                //}
+                loadNextQuestionWithTimeout()
+            //}
 
         } else {
             // there are no more Trivia questions
@@ -171,9 +176,14 @@ class ViewController: UIViewController {
     
     /// Gets called when one of the answer buttons is tapped
     @IBAction func checkAnswer(_ sender: UIButton) {
+
         // Cancel any running timers
         timer.invalidate()
-
+        progressBar.isHidden = true
+        progressBar.setProgress(0.0, animated: false)
+        UIView.animate(withDuration: 0.1) { () -> Void in
+            self.view.backgroundColor = self.viewBackgroundColor
+        }
         
         // Increment the questions asked counter
         questionsAsked += 1
@@ -282,14 +292,35 @@ class ViewController: UIViewController {
 
     // MARK: Helper Methods
 
-    func loadNextQuestionWithTimeout(seconds: Double = 15.0) {
-        timer = Timer.scheduledTimer(withTimeInterval: seconds, repeats: false) { (timer) in
-            // After x seconds, we force the game to continue by
-            // faking a button tap on a non-answer button
-            self.checkAnswer(self.playAgainButton)
+    func loadNextQuestionWithTimeout() {
+        var counter = 0
+        let seconds = 15
+        var progress : Float = 0.0
+        progressBar.isHidden = false
+        self.timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { (timer) in
+            // increase the number of seconds already passed
+            counter += 1
+            // update progress bar on the main thread
+            progress = Float(counter) / Float(seconds)
+            DispatchQueue.main.async { [unowned self] in
+                self.progressBar.setProgress(progress, animated: true)
+                self.view.backgroundColor = UIColor(red: 0xF5 / 255, green: 0x9F / 255, blue: 0x00 / 255, alpha: CGFloat(progress))
+
+
+            }
+            
+            // check if timeout happened
+            if (counter >= seconds) {
+                // After x seconds, we force the game to continue by
+                // faking a button tap on a non-answer button
+                self.checkAnswer(self.playAgainButton)
+            }
+            // debug
+            //print("Counter \(counter), seconds \(seconds)")
         }
     }
     
+
     func loadNextRoundWithDelay(seconds: Int) {
         // Reset background color
         view.backgroundColor = viewBackgroundColor

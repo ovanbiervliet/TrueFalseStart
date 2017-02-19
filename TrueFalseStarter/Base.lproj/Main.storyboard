@@ -23,7 +23,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Score: 0 — High Score: 0" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VsJ-eq-SXz">
-                                <rect key="frame" x="46" y="518" width="228" height="20.5"/>
+                                <rect key="frame" x="46" y="518.5" width="228" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <color key="textColor" red="0.76549625399999999" green="0.79233098030000004" blue="0.82081925870000005" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
@@ -103,12 +103,16 @@
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hurrry up, time is ticking!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="TjQ-4V-ZUE">
                                 <rect key="frame" x="80" y="78" width="160" height="17"/>
+                                <color key="tintColor" red="0.098002120849999999" green="0.1087746024" blue="0.1204562634" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" type="system" weight="thin" pointSize="14"/>
-                                <color key="textColor" red="0.098002120849999999" green="0.1087746024" blue="0.1204562634" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
+                                <nil key="textColor"/>
+                                <color key="highlightedColor" red="0.098002120849999999" green="0.1087746024" blue="0.1204562634" alpha="1" colorSpace="calibratedRGB"/>
                             </label>
+                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5RC-54-ReT">
+                                <rect key="frame" x="46" y="97" width="228" height="2"/>
+                            </progressView>
                         </subviews>
-                        <color key="backgroundColor" red="0.098002120849999999" green="0.1087746024" blue="0.1204562634" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
                             <constraint firstItem="K17-uy-MvB" firstAttribute="top" relation="greaterThanOrEqual" secondItem="yKB-gu-N6g" secondAttribute="bottom" constant="5" id="033-7F-v8H"/>
                             <constraint firstItem="TjQ-4V-ZUE" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="58" id="0P5-0j-BPt"/>
@@ -120,8 +124,11 @@
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="K17-uy-MvB" secondAttribute="bottom" constant="20" id="C20-RU-fdb"/>
                             <constraint firstItem="TjQ-4V-ZUE" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="CWp-px-GM9"/>
                             <constraint firstItem="VsJ-eq-SXz" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="CZ0-Ck-T0H"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="5RC-54-ReT" secondAttribute="trailing" constant="30" id="HUV-Ck-ihZ"/>
                             <constraint firstItem="I3V-ih-1Ky" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="20" id="Lwe-tg-ARs"/>
                             <constraint firstItem="I3V-ih-1Ky" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="10" id="PXN-PL-U5h"/>
+                            <constraint firstItem="5RC-54-ReT" firstAttribute="top" secondItem="TjQ-4V-ZUE" secondAttribute="bottom" constant="2" id="SlY-tR-89S"/>
+                            <constraint firstItem="5RC-54-ReT" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="30" id="UC2-9n-YX7"/>
                             <constraint firstAttribute="trailing" secondItem="K17-uy-MvB" secondAttribute="trailing" constant="20" id="Vi2-Kp-xbT"/>
                             <constraint firstItem="yKB-gu-N6g" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="20" id="Wwk-nc-EdC"/>
                             <constraint firstAttribute="trailingMargin" secondItem="yKB-gu-N6g" secondAttribute="trailing" constant="20" id="cKY-eE-Sju"/>
@@ -137,6 +144,7 @@
                     <connections>
                         <outlet property="emojiLabel" destination="ZnA-i6-tfB" id="qAp-Mr-CjN"/>
                         <outlet property="playAgainButton" destination="K17-uy-MvB" id="0Bx-Cm-ye0"/>
+                        <outlet property="progressBar" destination="5RC-54-ReT" id="XZl-G5-g7B"/>
                         <outlet property="questionField" destination="I3V-ih-1Ky" id="7UI-o2-ATi"/>
                         <outlet property="scoreLabel" destination="VsJ-eq-SXz" id="wqx-iQ-m47"/>
                         <outletCollection property="answerButtons" destination="J1V-MS-ECi" collectionClass="NSMutableArray" id="dCB-fP-Ljd"/>
